@@ -1,7 +1,7 @@
-streamlit==1.32.0
+streamlit
 
-langchain==0.1.16
-langchain-community==0.0.32
+langchain
+langchain-community
 langchain-google-genai
 google-generativeai
 
