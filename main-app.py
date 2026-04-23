@@ -149,7 +149,7 @@ def get_vectorstore(text_chunks, embeddings):
 
 def get_conversation_chain(vectorstore, gemini_api_key):
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",       # ← 선택한 모델
+        model="gemini-1.5-flash",       # ← 선택한 모델
         google_api_key=gemini_api_key,
         temperature=0,
         convert_system_message_to_human=True  # Gemini는 system role 미지원 → 필수 옵션
