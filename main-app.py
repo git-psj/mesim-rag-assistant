@@ -58,9 +58,10 @@ def main():
     else:
         vectorstore = get_vectorstore(text_chunks, embeddings)
         vectorstore.save_local("faiss_index")
-
-    if st.session_state.conversation is None and vectorstore:
-        st.session_state.conversation = get_conversation_chain(vectorstore, gemini_api_key)
+        
+    if vectorstore is not None and gemini_api_key:
+        if st.session_state.conversation is None:
+            st.session_state.conversation = get_conversation_chain(vectorstore, gemini_api_key)
 
     with st.sidebar:
         uploaded_files = st.file_uploader("Upload your file", type=['pdf', 'docx'], accept_multiple_files=True)
