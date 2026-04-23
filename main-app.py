@@ -30,7 +30,7 @@ def main():
     st.set_page_config(
         page_title="MESIM Assistant",
         page_icon="🤖")
-    st.title("_MESIM 운영 지원 :red[AI Assistant]_🤖")
+    st.title("MESIM :red[AI Assistant] 🤖")
 
     gemini_api_key = st.secrets['gemini_api_key']
 
