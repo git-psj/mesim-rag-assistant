@@ -1,7 +1,12 @@
+langchain-google-genai==1.0.8
+google-generativeai==0.7.2
+grpcio==1.60.0
+protobuf==4.25.3
+
 pysqlite3-binary
 langchain==0.1.16
 langchain-community==0.0.32
-langchain-google-genai          # ← 추가
+#langchain-google-genai          # ← 추가
 chromadb==0.4.24
 unstructured
 sentence-transformers
