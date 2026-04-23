@@ -99,36 +99,36 @@ def main():
 
   #history = StreamlitChatMessageHistory(key="chat_messages")
 
-# Chat logic
-if query := st.chat_input("질문을 입력해주세요."):
-    st.session_state.messages.append({"role": "user", "content": query})
-
-    with st.chat_message("user"):
-        st.markdown(query)
-
-    with st.chat_message("assistant"):
-        chain = st.session_state.conversation
-
-        with st.spinner("Thinking..."):
-            try:
-                result = chain({"question": query})
-            except Exception as e:
-                st.error(f"Error occurred: {str(e)}")
-                return
-
-            st.session_state.chat_history = result.get('chat_history', [])
-
-            response = result.get('answer', 'No answer provided')
-            source_documents = result.get('source_documents', [])
-
-            st.markdown(response)
-            if source_documents:
-                with st.expander("참고 문서 확인"):
-                    for doc in source_documents:
-                        st.markdown(doc.metadata.get('source', 'No source metadata'), help=doc.page_content)
-
-    # Add assistant message to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+  # Chat logic
+  if query := st.chat_input("질문을 입력해주세요."):
+      st.session_state.messages.append({"role": "user", "content": query})
+  
+      with st.chat_message("user"):
+          st.markdown(query)
+  
+      with st.chat_message("assistant"):
+          chain = st.session_state.conversation
+  
+          with st.spinner("Thinking..."):
+              try:
+                  result = chain({"question": query})
+              except Exception as e:
+                  st.error(f"Error occurred: {str(e)}")
+                  return
+  
+              st.session_state.chat_history = result.get('chat_history', [])
+  
+              response = result.get('answer', 'No answer provided')
+              source_documents = result.get('source_documents', [])
+  
+              st.markdown(response)
+              if source_documents:
+                  with st.expander("참고 문서 확인"):
+                      for doc in source_documents:
+                          st.markdown(doc.metadata.get('source', 'No source metadata'), help=doc.page_content)
+  
+      # Add assistant message to chat history
+      st.session_state.messages.append({"role": "assistant", "content": response})
 
 def tiktoken_len(text):
     tokenizer = tiktoken.get_encoding("cl100k_base")
