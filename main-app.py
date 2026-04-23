@@ -59,7 +59,7 @@ def main():
         vectorstore = get_vectorstore(text_chunks, embeddings)
         vectorstore.save_local("faiss_index")
 
-    if st.session_state.conversation is None:
+    if st.session_state.conversation is None and vectorstore:
         st.session_state.conversation = get_conversation_chain(vectorstore, gemini_api_key)
 
     with st.sidebar:
