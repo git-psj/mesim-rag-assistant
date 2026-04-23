@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
+#from langchain.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import Docx2txtLoader
@@ -36,7 +37,7 @@ def main():
     page_icon="🤖")
   st.title("_MESIM 운영 지원 :red[AI Assistant]_🤖")
 
-  openai_api_key = st.secrets['openai_api_key']
+  google_api_key = st.secrets['google_api_key']
 
   default_docs = load_default_docs()
   embeddings = HuggingFaceEmbeddings(
@@ -66,7 +67,7 @@ def main():
       vectorstore.save_local("faiss_index")
 
   if st.session_state.conversation is None:
-    st.session_state.conversation = get_conversation_chain(vectorstore,openai_api_key) 
+    st.session_state.conversation = get_conversation_chain(vectorstore,google_api_key) 
 
   
 
@@ -84,13 +85,13 @@ def main():
       # 기본 문서 + 업로드 문서 병합
       vectorstore.merge_from(upload_vectorstore)
     #st.session_state.processComplete = True
-    st.session_state.conversation = get_conversation_chain(vectorstore,openai_api_key) 
+    st.session_state.conversation = get_conversation_chain(vectorstore,google_api_key) 
   
   
 
   if 'messages' not in st.session_state:
       st.session_state['messages'] = [{"role": "assistant", 
-                                      "content": "안녕하세요! openai입니다. 질문 사항을 적어주세요!"}]
+                                      "content": "안녕하세요! MESIM Assistant입니다. 질문 사항을 적어주세요!"}]
 
   for message in st.session_state.messages:
       with st.chat_message(message["role"]):
@@ -98,8 +99,8 @@ def main():
 
   #history = StreamlitChatMessageHistory(key="chat_messages")
 
-  # Chat logic
-  if query := st.chat_input("질문을 입력해주세요."):
+# Chat logic
+if query := st.chat_input("질문을 입력해주세요."):
     st.session_state.messages.append({"role": "user", "content": query})
 
     with st.chat_message("user"):
@@ -109,16 +110,22 @@ def main():
         chain = st.session_state.conversation
 
         with st.spinner("Thinking..."):
-            result = chain({"question": query})
-            #with get_openai_callback() as cb:
-            #    st.session_state.chat_history = result['chat_history']
-            response = result['answer']
-            source_documents = result['source_documents']
+            try:
+                result = chain({"question": query})
+            except Exception as e:
+                st.error(f"Error occurred: {str(e)}")
+                return
+
+            st.session_state.chat_history = result.get('chat_history', [])
+
+            response = result.get('answer', 'No answer provided')
+            source_documents = result.get('source_documents', [])
 
             st.markdown(response)
-            with st.expander("참고 문서 확인"):
-                for doc in source_documents:
-                  st.markdown(doc.metadata['source'], help = doc.page_content)
+            if source_documents:
+                with st.expander("참고 문서 확인"):
+                    for doc in source_documents:
+                        st.markdown(doc.metadata.get('source', 'No source metadata'), help=doc.page_content)
 
     # Add assistant message to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
@@ -163,18 +170,22 @@ def get_vectorstore(text_chunks, embeddings):
     vectordb = FAISS.from_documents(text_chunks, embeddings)
     return vectordb
 
-def get_conversation_chain(vectorstore,openai_api_key):
-    llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
-    conversation_chain = ConversationalRetrievalChain.from_llm(
+def get_conversation_chain(vectorstore,google_api_key):
+    try:
+        llm = ChatGoogleGenerativeAI(google_api_key=google_api_key, model='gemini-1.5-flash')
+        conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm, 
             chain_type="stuff", 
-            retriever=vectorstore.as_retriever(search_type = 'mmr', verbose = True), 
+            retriever=vectorstore.as_retriever(search_type='mmr', verbose=True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
             get_chat_history=lambda h: h,
             return_source_documents=True,
-            verbose = True
+            verbose=True
         )
-    return conversation_chain
+        return conversation_chain
+    except Exception as e:
+        st.error(f"Failed to create conversation chain: {str(e)}")
+        return None
 
 # 기본 문서 로딩
 def load_default_docs():
