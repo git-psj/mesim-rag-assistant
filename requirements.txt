@@ -1,12 +1,12 @@
+streamlit==1.32.0
+
 langchain==0.1.16
 langchain-community==0.0.32
 langchain-google-genai
-
 google-generativeai
 
 sentence-transformers
 pypdf
 docx2txt
-unstructured
 tiktoken
 loguru
