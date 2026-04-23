@@ -8,4 +8,4 @@ faiss-cpu
 pypdf
 loguru
 docx2txt
-langchain-google-genai==1.0.8
+langchain-google-genai==0.0.6
